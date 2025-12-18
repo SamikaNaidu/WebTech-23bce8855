@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Card</title>
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: #f4f6f9;
+      padding: 40px;
+    }
+
+    .product-card {
+      width: 300px;
+      margin: auto;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+
+    .product-card img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .product-card h3 {
+      margin: 10px 0 5px;
+    }
+
+    /* ✅ Short description */
+    .description {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 18px;
+      font-weight: bold;
+      color: #28a745;
+      margin-bottom: 15px;
+    }
+
+    .buy-btn {
+      padding: 10px 20px;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    /* ✅ Hover effect */
+    .buy-btn:hover {
+      background-color: #e68900;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="product-card">
+  <img src="watch.png" alt="Product Image">
+
+  <h3>Smart Watch</h3>
+
+  <!-- ✅ Short description added -->
+  <p class="description">
+    Stylish smartwatch with fitness tracking, heart-rate monitoring,
+    and mobile notifications.
+  </p>
+
+  <p class="price">₹4,999</p>
+
+  <button class="buy-btn">Buy Now</button>
+</div>
+
+</body>
+</html>
+

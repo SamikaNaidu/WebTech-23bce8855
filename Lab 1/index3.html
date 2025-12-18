@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
+      padding: 40px;
+    }
+
+    .box {
+      width: 450px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    /* ✅ Checkbox alignment fix */
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+
+    .checkbox-group input {
+      width: auto;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>User Registration</h2>
+
+  <form>
+    <label>Full Name</label>
+    <input type="text" required>
+
+    <label>Email</label>
+    <input 
+      type="email" 
+      required 
+      pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"
+      title="Please enter a valid email address"
+    >
+
+    <label>Date of Birth</label>
+    <input type="date" required>
+
+    <label>Phone Number</label>
+    <input type="tel" required>
+
+    <label>Password</label>
+    <input type="password" required>
+
+    <label>Profile Picture</label>
+    <input type="file" required>
+
+    <!-- ✅ Properly aligned checkbox -->
+    <div class="checkbox-group">
+      <input type="checkbox" required>
+      <span>Accept Terms & Conditions</span>
+    </div>
+
+    <button type="submit">Register</button>
+  </form>
+</div>
+
+</body>
+</html>
