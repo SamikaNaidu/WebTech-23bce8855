@@ -1,0 +1,56 @@
+body {
+    background: #efefef;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding-top: 30px;
+}
+
+.container {
+    width: 700px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.panel {
+    margin-bottom: 20px;
+}
+
+.track-btn {
+    padding: 10px 15px;
+    margin-right: 10px;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+#focusInput {
+    padding: 8px;
+    width: 200px;
+    border-radius: 4px;
+    border: 1px solid #999;
+}
+
+#logBox {
+    background: #f8f8f8;
+    padding: 10px;
+    height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.log-entry {
+    font-size: 14px;
+    margin: 4px 0;
+    padding: 4px;
+    border-bottom: 1px solid #ddd;
+}
+
+#warning {
+    color: red;
+    font-weight: bold;
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Stage Form Workflow</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Multi-Stage Form</h2>
+
+    <!-- Progress Bar -->
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+    </div>
+
+    <!-- STAGE 1 -->
+    <div class="stage" id="stage1">
+        <h3>Stage 1: Personal Info</h3>
+        <input type="text" id="name" placeholder="Enter Name">
+        <input type="number" id="age" placeholder="Enter Age">
+        <p class="error" id="err1"></p>
+        <button onclick="nextStage(1)">Next</button>
+    </div>
+
+    <!-- STAGE 2 -->
+    <div class="stage" id="stage2">
+        <h3>Stage 2: Contact Info</h3>
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="text" id="phone" placeholder="Enter Phone (10 digits)">
+        <p class="error" id="err2"></p>
+        <button onclick="prevStage(2)">Back</button>
+        <button onclick="nextStage(2)">Next</button>
+    </div>
+
+    <!-- STAGE 3 -->
+    <div class="stage" id="stage3">
+        <h3>Stage 3: Account Security</h3>
+        <input type="password" id="password" placeholder="Enter Password (min 6)">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password">
+        <p class="error" id="err3"></p>
+        <button onclick="prevStage(3)">Back</button>
+        <button onclick="nextStage(3)">Next</button>
+    </div>
+
+    <!-- STAGE 4 -->
+    <div class="stage" id="stage4">
+        <h3>Stage 4: Summary</h3>
+        <pre id="summary"></pre>
+        <p class="error" id="err4"></p>
+        <button onclick="prevStage(4)">Back</button>
+        <button onclick="submitForm()">Submit</button>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
