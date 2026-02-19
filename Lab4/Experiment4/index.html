@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AJAX Weather Dashboard</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 30px;
+    width: 420px;
+    border-radius: 14px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+  }
+
+  button {
+    margin-top: 12px;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: #4facfe;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #3d9be8;
+  }
+
+  .spinner {
+    margin: 15px auto;
+    width: 30px;
+    height: 30px;
+    border: 4px solid #ddd;
+    border-top: 4px solid #4facfe;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .result {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+
+  .error {
+    color: #c62828;
+    font-weight: bold;
+  }
+
+  .success {
+    color: #2e7d32;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🌤️ Weather Dashboard</h2>
+
+  <input type="text" id="cityInput" placeholder="Enter city name..." />
+  <button id="searchBtn">Get Weather</button>
+
+  <div class="spinner" id="spinner"></div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  // 🔑 Your OpenWeather API key
+  const apiKey = "96f4ad1423ccebcdd5a63401e7b2ab09";
+
+  const cityInput = document.getElementById("cityInput");
+  const searchBtn = document.getElementById("searchBtn");
+  const resultDiv = document.getElementById("result");
+  const spinner = document.getElementById("spinner");
+
+  // Cache last searched result
+  let lastResult = null;
+
+  searchBtn.addEventListener("click", () => {
+    const city = cityInput.value.trim();
+
+    if (city === "") {
+      showError("Please enter a city name");
+      return;
+    }
+
+    // If same city searched again, use cache
+    if (lastResult && lastResult.city.toLowerCase() === city.toLowerCase()) {
+      displayWeather(lastResult.data, true);
+      return;
+    }
+
+    fetchWeather(city);
+  });
+
+  function fetchWeather(city) {
+    resultDiv.textContent = "";
+    spinner.style.display = "block";
+
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("City not found (404)");
+          } else if (response.status === 401) {
+            throw new Error("Invalid API key (401)");
+          } else {
+            throw new Error("Server error (" + response.status + ")");
+          }
+        }
+        return response.json();
+      })
+      .then(data => {
+        spinner.style.display = "none";
+
+        // Cache result
+        lastResult = {
+          city: city,
+          data: data
+        };
+
+        displayWeather(data, false);
+      })
+      .catch(err => {
+        spinner.style.display = "none";
+        showError(err.message);
+      });
+  }
+
+  function displayWeather(data, fromCache) {
+    const temp = data.main.temp;
+    const humidity = data.main.humidity;
+    const condition = data.weather[0].description;
+
+    resultDiv.className = "result success";
+    resultDiv.innerHTML = `
+      <p><strong>Temperature:</strong> ${temp} °C</p>
+      <p><strong>Humidity:</strong> ${humidity} %</p>
+      <p><strong>Condition:</strong> ${condition}</p</p>
+      ${fromCache ? "<p>(Loaded from cache)</p>" : ""}
+    `;
+  }
+
+  function showError(msg) {
+    resultDiv.className = "result error";
+    resultDiv.textContent = msg;
+  }
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Username Availability Checker</title>
+
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px 30px;
+    width: 360px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+
+  .card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  label {
+    font-weight: 600;
+    color: #444;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+    transition: 0.2s;
+  }
+
+  input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
+  }
+
+  #status {
+    margin-top: 10px;
+    min-height: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .available {
+    color: #2e7d32;
+  }
+
+  .taken {
+    color: #c62828;
+  }
+
+  .loading {
+    color: #f57c00;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #5a6fe0;
+  }
+
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #f57c00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Create Account</h2>
+
+  <form id="registerForm">
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="Enter username" required />
+
+    <div id="status"></div>
+
+    <button type="submit" id="submitBtn" disabled>Register</button>
+  </form>
+</div>
+
+<script>
+const usernameInput = document.getElementById("username");
+const statusDiv = document.getElementById("status");
+const form = document.getElementById("registerForm");
+const submitBtn = document.getElementById("submitBtn");
+
+let isAvailable = false;
+
+usernameInput.addEventListener("input", () => {
+  const username = usernameInput.value.trim().toLowerCase();
+
+  if (username.length === 0) {
+    statusDiv.innerHTML = "";
+    submitBtn.disabled = true;
+    return;
+  }
+
+  // Show loading spinner
+  statusDiv.className = "loading";
+  statusDiv.innerHTML = `<div class="spinner"></div> Checking...`;
+  submitBtn.disabled = true;
+
+  fetch("users.json")
+    .then(response => response.json())
+    .then(data => {
+      // Simulate delay
+      setTimeout(() => {
+        const users = data.users.map(u => u.toLowerCase());
+
+        if (users.includes(username)) {
+          statusDiv.className = "taken";
+          statusDiv.textContent = "❌ Username already taken";
+          isAvailable = false;
+          submitBtn.disabled = true;
+        } else {
+          statusDiv.className = "available";
+          statusDiv.textContent = "✅ Username available";
+          isAvailable = true;
+          submitBtn.disabled = false;
+        }
+      }, 600);
+    })
+    .catch(err => {
+      console.error(err);
+      statusDiv.className = "taken";
+      statusDiv.textContent = "⚠️ Error checking username";
+      isAvailable = false;
+      submitBtn.disabled = true;
+    });
+});
+
+// Prevent submit if not available
+form.addEventListener("submit", (e) => {
+  if (!isAvailable) {
+    e.preventDefault();
+    alert("Please choose an available username!");
+  } else {
+    alert("Registered successfully!");
+  }
+});
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Management System (AJAX CRUD)</title>
+
+<style>
+  * {
+  box-sizing: border-box;   /* ✅ Very important */
+}
+
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* 4 equal columns */
+  gap: 12px;
+}
+
+  input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+  button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #5a6fe0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #f3f3f3;
+  }
+
+  .actions button {
+    margin: 0 5px;
+    background: #444;
+  }
+
+  .actions .delete {
+    background: #c62828;
+  }
+
+  .actions .edit {
+    background: #2e7d32;
+  }
+
+  #message {
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .success { color: green; }
+  .error { color: red; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🎓 Student Management System (AJAX CRUD)</h2>
+
+  <div class="form-row">
+    <input type="text" id="sid" placeholder="Student ID">
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="dept" placeholder="Department">
+    <input type="number" id="marks" placeholder="Marks">
+  </div>
+
+  <div style="margin-top: 15px; text-align:center;">
+    <button id="addBtn">Add / Update Student</button>
+  </div>
+
+  <div id="message"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Student ID</th>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Marks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+</div>
+
+<script>
+let students = JSON.parse(localStorage.getItem("students")) || [];
+
+const sidInput = document.getElementById("sid");
+const nameInput = document.getElementById("name");
+const deptInput = document.getElementById("dept");
+const marksInput = document.getElementById("marks");
+const tableBody = document.getElementById("studentTable");
+const messageDiv = document.getElementById("message");
+const addBtn = document.getElementById("addBtn");
+
+// Simulate AJAX Fetch
+function fakeFetch(data, status = 200) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (status === 200) resolve({ status: 200, json: () => Promise.resolve(data) });
+      else reject({ status: status });
+    }, 300);
+  });
+}
+
+// READ
+function loadStudents() {
+  fakeFetch(students, 200)
+    .then(res => res.json())
+    .then(data => renderTable(data))
+    .catch(() => showMessage("Failed to fetch students (500)", "error"));
+}
+
+// CREATE / UPDATE
+addBtn.addEventListener("click", () => {
+  const sid = sidInput.value.trim();
+  const name = nameInput.value.trim();
+  const dept = deptInput.value.trim();
+  const marks = marksInput.value.trim();
+
+  if (!sid || !name || !dept || !marks) {
+    showMessage("All fields are required!", "error");
+    return;
+  }
+
+  const existingIndex = students.findIndex(s => s.sid === sid);
+
+  if (existingIndex !== -1) {
+    // UPDATE
+    students[existingIndex] = { sid, name, dept, marks };
+    fakeFetch({}, 200).then(() => {
+      saveAndRefresh();
+      showMessage("Student updated successfully (200)", "success");
+    });
+  } else {
+    // CREATE
+    students.push({ sid, name, dept, marks });
+    fakeFetch({}, 200).then(() => {
+      saveAndRefresh();
+      showMessage("Student added successfully (200)", "success");
+    });
+  }
+
+  clearForm();
+});
+
+// DELETE
+function deleteStudent(sid) {
+  const index = students.findIndex(s => s.sid === sid);
+  if (index === -1) {
+    showMessage("Student not found (404)", "error");
+    return;
+  }
+
+  students.splice(index, 1);
+  fakeFetch({}, 200).then(() => {
+    saveAndRefresh();
+    showMessage("Student deleted successfully (200)", "success");
+  });
+}
+
+// EDIT (Load into form)
+function editStudent(sid) {
+  const student = students.find(s => s.sid === sid);
+  if (!student) {
+    showMessage("Student not found (404)", "error");
+    return;
+  }
+
+  sidInput.value = student.sid;
+  nameInput.value = student.name;
+  deptInput.value = student.dept;
+  marksInput.value = student.marks;
+}
+
+// Render Table
+function renderTable(data) {
+  tableBody.innerHTML = "";
+  data.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${s.sid}</td>
+      <td>${s.name}</td>
+      <td>${s.dept}</td>
+      <td>${s.marks}</td>
+      <td class="actions">
+        <button class="edit" onclick="editStudent('${s.sid}')">Edit</button>
+        <button class="delete" onclick="deleteStudent('${s.sid}')">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+// Helpers
+function saveAndRefresh() {
+  localStorage.setItem("students", JSON.stringify(students));
+  loadStudents();
+}
+
+function clearForm() {
+  sidInput.value = "";
+  nameInput.value = "";
+  deptInput.value = "";
+  marksInput.value = "";
+}
+
+function showMessage(msg, type) {
+  messageDiv.textContent = msg;
+  messageDiv.className = type;
+}
+
+// Initial load
+loadStudents();
+</script>
+
+</body>
+</html>

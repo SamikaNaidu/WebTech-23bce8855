@@ -1,0 +1,23 @@
+[
+  { "id": 1, "name": "iPhone 14", "brand": "Apple", "price": 69999, "category": "Mobile", "rating": 4.6 },
+  { "id": 2, "name": "iPhone 15", "brand": "Apple", "price": 79999, "category": "Mobile", "rating": 4.8 },
+  { "id": 3, "name": "Samsung Galaxy S23", "brand": "Samsung", "price": 64999, "category": "Mobile", "rating": 4.5 },
+  { "id": 4, "name": "OnePlus 12", "brand": "OnePlus", "price": 59999, "category": "Mobile", "rating": 4.4 },
+  { "id": 5, "name": "Dell Inspiron 15", "brand": "Dell", "price": 55999, "category": "Laptop", "rating": 4.2 },
+  { "id": 6, "name": "HP Pavilion 14", "brand": "HP", "price": 58999, "category": "Laptop", "rating": 4.3 },
+  { "id": 7, "name": "MacBook Air M1", "brand": "Apple", "price": 89999, "category": "Laptop", "rating": 4.8 },
+  { "id": 8, "name": "Lenovo IdeaPad Slim", "brand": "Lenovo", "price": 49999, "category": "Laptop", "rating": 4.1 },
+  { "id": 9, "name": "Sony WH-1000XM5", "brand": "Sony", "price": 29999, "category": "Accessories", "rating": 4.7 },
+  { "id": 10, "name": "Boat Rockerz 450", "brand": "Boat", "price": 1999, "category": "Accessories", "rating": 4.0 },
+  { "id": 11, "name": "Apple Watch Series 9", "brand": "Apple", "price": 41999, "category": "Wearable", "rating": 4.6 },
+  { "id": 12, "name": "Mi Smart Band 8", "brand": "Xiaomi", "price": 2999, "category": "Wearable", "rating": 4.3 },
+  { "id": 13, "name": "Samsung Galaxy Watch 6", "brand": "Samsung", "price": 34999, "category": "Wearable", "rating": 4.5 },
+  { "id": 14, "name": "Logitech MX Master 3", "brand": "Logitech", "price": 9999, "category": "Accessories", "rating": 4.7 },
+  { "id": 15, "name": "Canon EOS 1500D", "brand": "Canon", "price": 37999, "category": "Camera", "rating": 4.4 },
+  { "id": 16, "name": "Nikon D3500", "brand": "Nikon", "price": 35999, "category": "Camera", "rating": 4.3 },
+  { "id": 17, "name": "iPad 10th Gen", "brand": "Apple", "price": 44999, "category": "Tablet", "rating": 4.6 },
+  { "id": 18, "name": "Samsung Galaxy Tab S9", "brand": "Samsung", "price": 72999, "category": "Tablet", "rating": 4.7 },
+  { "id": 19, "name": "Realme Buds Air 5", "brand": "Realme", "price": 3999, "category": "Accessories", "rating": 4.2 },
+  { "id": 20, "name": "Asus TUF Gaming F15", "brand": "Asus", "price": 74999, "category": "Laptop", "rating": 4.5 }
+]
+

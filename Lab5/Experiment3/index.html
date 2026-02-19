@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Record System (JSON + Fetch)</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    margin-top: 12px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #5a6fe0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #f3f3f3;
+  }
+
+  .actions button {
+    margin: 0 5px;
+  }
+
+  .delete {
+    background: #c62828;
+  }
+
+  .edit {
+    background: #2e7d32;
+  }
+
+  #message {
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .success { color: green; }
+  .error { color: red; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🎓 Student Record System (JSON + Fetch)</h2>
+
+  <div class="form-row">
+    <input type="text" id="sid" placeholder="Student ID">
+    <input type="text" id="sname" placeholder="Name">
+    <input type="text" id="scourse" placeholder="Course">
+    <input type="number" id="smarks" placeholder="Marks">
+  </div>
+
+  <div style="text-align:center;">
+    <button onclick="addOrUpdateStudent()">Add / Update Student</button>
+  </div>
+
+  <div id="message"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Course</th>
+        <th>Marks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+</div>
+
+<script>
+let students = []; // in-memory data (loaded from JSON)
+
+// Load JSON using Fetch
+function loadStudents() {
+  fetch("students.json")
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch JSON");
+      return res.json(); // Parse JSON
+    })
+    .then(data => {
+      if (!Array.isArray(data)) throw new Error("Invalid JSON format");
+      students = data;
+      displayStudents();
+    })
+    .catch(err => {
+      console.error(err);
+      showMessage("Error loading or parsing JSON file!", "error");
+    });
+}
+
+// READ: Display all students
+function displayStudents() {
+  const tbody = document.getElementById("studentTable");
+  tbody.innerHTML = "";
+
+  students.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${s.id}</td>
+      <td>${s.name}</td>
+      <td>${s.course}</td>
+      <td>${s.marks}</td>
+      <td class="actions">
+        <button class="edit" onclick="editStudent('${s.id}')">Edit</button>
+        <button class="delete" onclick="deleteStudent('${s.id}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// CREATE / UPDATE
+function addOrUpdateStudent() {
+  const id = document.getElementById("sid").value.trim();
+  const name = document.getElementById("sname").value.trim();
+  const course = document.getElementById("scourse").value.trim();
+  const marks = document.getElementById("smarks").value.trim();
+
+  // Validation
+  if (!id || !name || !course || marks === "") {
+    showMessage("All fields are required!", "error");
+    return;
+  }
+  if (isNaN(marks) || marks < 0 || marks > 100) {
+    showMessage("Marks must be a number between 0 and 100!", "error");
+    return;
+  }
+
+  const index = students.findIndex(s => s.id === id);
+
+  if (index !== -1) {
+    // UPDATE
+    students[index].name = name;
+    students[index].course = course;
+    students[index].marks = Number(marks);
+    showMessage("Student updated successfully!", "success");
+  } else {
+    // CREATE
+    students.push({
+      id: id,
+      name: name,
+      course: course,
+      marks: Number(marks)
+    });
+    showMessage("Student added successfully!", "success");
+  }
+
+  clearForm();
+  displayStudents();
+}
+
+// DELETE
+function deleteStudent(id) {
+  const index = students.findIndex(s => s.id === id);
+  if (index === -1) {
+    showMessage("Student not found!", "error");
+    return;
+  }
+  students.splice(index, 1);
+  showMessage("Student deleted successfully!", "success");
+  displayStudents();
+}
+
+// EDIT (load into form)
+function editStudent(id) {
+  const s = students.find(st => st.id === id);
+  if (!s) {
+    showMessage("Student not found!", "error");
+    return;
+  }
+  document.getElementById("sid").value = s.id;
+  document.getElementById("sname").value = s.name;
+  document.getElementById("scourse").value = s.course;
+  document.getElementById("smarks").value = s.marks;
+}
+
+// Helpers
+function clearForm() {
+  document.getElementById("sid").value = "";
+  document.getElementById("sname").value = "";
+  document.getElementById("scourse").value = "";
+  document.getElementById("smarks").value = "";
+}
+
+function showMessage(msg, type) {
+  const msgDiv = document.getElementById("message");
+  msgDiv.textContent = msg;
+  msgDiv.className = type;
+}
+
+// Initial load
+loadStudents();
+</script>
+
+</body>
+</html>

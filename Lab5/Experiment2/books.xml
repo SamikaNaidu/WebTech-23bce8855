@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book>
+    <id>B101</id>
+    <title>Clean Code</title>
+    <author>Robert C. Martin</author>
+    <status>Available</status>
+  </book>
+  <book>
+    <id>B102</id>
+    <title>Introduction to Algorithms</title>
+    <author>Thomas H. Cormen</author>
+    <status>Issued</status>
+  </book>
+</library>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Library Book Tracker (XML DOM + AJAX)</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  input, select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    margin-top: 12px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #43cea2;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #36b08f;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #f3f3f3;
+  }
+
+  .actions button {
+    margin: 0 5px;
+  }
+
+  .delete {
+    background: #c62828;
+  }
+
+  .toggle {
+    background: #2e7d32;
+  }
+
+  #message {
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .success { color: green; }
+  .error { color: red; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>📚 Library Book Tracker (XML DOM + AJAX)</h2>
+
+  <div class="form-row">
+    <input type="text" id="bid" placeholder="Book ID">
+    <input type="text" id="title" placeholder="Title">
+    <input type="text" id="author" placeholder="Author">
+    <select id="status">
+      <option value="Available">Available</option>
+      <option value="Issued">Issued</option>
+    </select>
+  </div>
+
+  <div style="text-align:center;">
+    <button onclick="addBook()">Add Book</button>
+  </div>
+
+  <div id="message"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Book ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="bookTable"></tbody>
+  </table>
+</div>
+
+<script>
+let xmlDoc = null;
+
+// Load XML using AJAX
+function loadXML() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", "books.xml", true);
+  xhr.send();
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        if (!xhr.responseXML) {
+          showMessage("Malformed or empty XML file!", "error");
+          return;
+        }
+        xmlDoc = xhr.responseXML;
+        displayBooks();
+      } else {
+        showMessage("Failed to load XML file!", "error");
+      }
+    }
+  };
+}
+
+// Display books (READ)
+function displayBooks() {
+  const tableBody = document.getElementById("bookTable");
+  tableBody.innerHTML = "";
+
+  const books = xmlDoc.getElementsByTagName("book");
+
+  for (let i = 0; i < books.length; i++) {
+    const id = books[i].getElementsByTagName("id")[0].textContent;
+    const title = books[i].getElementsByTagName("title")[0].textContent;
+    const author = books[i].getElementsByTagName("author")[0].textContent;
+    const status = books[i].getElementsByTagName("status")[0].textContent;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${id}</td>
+      <td>${title}</td>
+      <td>${author}</td>
+      <td>${status}</td>
+      <td class="actions">
+        <button class="toggle" onclick="toggleStatus('${id}')">Toggle Status</button>
+        <button class="delete" onclick="deleteBook('${id}')">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  }
+}
+
+// ADD new <book> node
+function addBook() {
+  const id = document.getElementById("bid").value.trim();
+  const title = document.getElementById("title").value.trim();
+  const author = document.getElementById("author").value.trim();
+  const status = document.getElementById("status").value;
+
+  if (!id || !title || !author) {
+    showMessage("All fields are required!", "error");
+    return;
+  }
+
+  // Check duplicate ID
+  const books = xmlDoc.getElementsByTagName("book");
+  for (let i = 0; i < books.length; i++) {
+    const bid = books[i].getElementsByTagName("id")[0].textContent;
+    if (bid === id) {
+      showMessage("Book ID already exists!", "error");
+      return;
+    }
+  }
+
+  const newBook = xmlDoc.createElement("book");
+
+  const idNode = xmlDoc.createElement("id");
+  idNode.textContent = id;
+
+  const titleNode = xmlDoc.createElement("title");
+  titleNode.textContent = title;
+
+  const authorNode = xmlDoc.createElement("author");
+  authorNode.textContent = author;
+
+  const statusNode = xmlDoc.createElement("status");
+  statusNode.textContent = status;
+
+  newBook.appendChild(idNode);
+  newBook.appendChild(titleNode);
+  newBook.appendChild(authorNode);
+  newBook.appendChild(statusNode);
+
+  xmlDoc.getElementsByTagName("library")[0].appendChild(newBook);
+
+  showMessage("Book added successfully!", "success");
+  clearForm();
+  displayBooks();
+}
+
+// UPDATE availability status
+function toggleStatus(id) {
+  const books = xmlDoc.getElementsByTagName("book");
+
+  for (let i = 0; i < books.length; i++) {
+    const bid = books[i].getElementsByTagName("id")[0].textContent;
+    if (bid === id) {
+      const statusNode = books[i].getElementsByTagName("status")[0];
+      statusNode.textContent = (statusNode.textContent === "Available") ? "Issued" : "Available";
+      showMessage("Status updated successfully!", "success");
+      displayBooks();
+      return;
+    }
+  }
+
+  showMessage("Book not found!", "error");
+}
+
+// DELETE book entry
+function deleteBook(id) {
+  const books = xmlDoc.getElementsByTagName("book");
+
+  for (let i = 0; i < books.length; i++) {
+    const bid = books[i].getElementsByTagName("id")[0].textContent;
+    if (bid === id) {
+      books[i].parentNode.removeChild(books[i]);
+      showMessage("Book deleted successfully!", "success");
+      displayBooks();
+      return;
+    }
+  }
+
+  showMessage("Book not found!", "error");
+}
+
+// Helpers
+function clearForm() {
+  document.getElementById("bid").value = "";
+  document.getElementById("title").value = "";
+  document.getElementById("author").value = "";
+  document.getElementById("status").value = "Available";
+}
+
+function showMessage(msg, type) {
+  const msgDiv = document.getElementById("message");
+  msgDiv.textContent = msg;
+  msgDiv.className = type;
+}
+
+// Initial load
+loadXML();
+</script>
+
+</body>
+</html>

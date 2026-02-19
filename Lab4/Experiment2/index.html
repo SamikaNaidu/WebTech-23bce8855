@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Search</title>
+
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #2bb0a6, #1f7aa8);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 30px;
+    width: 600px;
+    border-radius: 14px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: #222;
+  }
+
+  input {
+  width: 100%;
+  box-sizing: border-box;   /* ✅ This is the key line */
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 2px solid #4fd1c5;
+  outline: none;
+}
+
+
+  input:focus {
+    box-shadow: 0 0 0 3px rgba(79,209,197,0.3);
+  }
+
+  #status {
+    margin-top: 15px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  #results {
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  .item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .item:last-child {
+    border-bottom: none;
+  }
+
+  .name {
+    font-weight: bold;
+    color: #222;
+  }
+
+  .meta {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .price {
+    color: #2e7d32;
+    font-weight: 600;
+  }
+
+  .error {
+    color: #c62828;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🔍 Product Search</h2>
+  <input type="text" id="searchBox" placeholder="Search products by name, brand or category..." />
+
+  <div id="status"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+const searchBox = document.getElementById("searchBox");
+const resultsDiv = document.getElementById("results");
+const statusDiv = document.getElementById("status");
+
+let debounceTimer = null;
+
+// Debounce function
+function debounce(callback, delay) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(callback, delay);
+}
+
+searchBox.addEventListener("input", () => {
+  const query = searchBox.value.trim().toLowerCase();
+
+  debounce(() => {
+    if (query === "") {
+      resultsDiv.innerHTML = "";
+      statusDiv.textContent = "";
+      return;
+    }
+
+    statusDiv.textContent = "Searching...";
+    resultsDiv.innerHTML = "";
+
+    fetch("products.json")
+      .then(res => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+      })
+      .then(products => {
+        const filtered = products.filter(p =>
+          p.name.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query) ||
+          p.brand.toLowerCase().includes(query)
+        );
+
+        if (filtered.length === 0) {
+          statusDiv.textContent = "No results found";
+          resultsDiv.innerHTML = "";
+        } else {
+          statusDiv.textContent = "";
+          displayResults(filtered);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        statusDiv.textContent = "Failed to load products!";
+        statusDiv.classList.add("error");
+      });
+
+  }, 400); // debounce delay
+});
+
+function displayResults(items) {
+  resultsDiv.innerHTML = "";
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="name">${item.name} (${item.brand})</div>
+      <div class="meta">${item.category} • ⭐ ${item.rating}</div>
+      <div class="price">₹ ${item.price}</div>
+    `;
+    resultsDiv.appendChild(div);
+  });
+}
+</script>
+
+</body>
+</html>

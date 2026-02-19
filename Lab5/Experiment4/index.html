@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Inventory System (JSON + Fetch)</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    width: 1000px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #43cea2;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #36b08f;
+  }
+
+  .danger {
+    background: #c62828;
+  }
+
+  .edit {
+    background: #2e7d32;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #f3f3f3;
+  }
+
+  .low-stock {
+    background-color: #ffebee;
+    color: #c62828;
+    font-weight: bold;
+  }
+
+  #message {
+    margin-top: 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .success { color: green; }
+  .error { color: red; }
+
+  .top-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .top-bar input {
+    flex: 1;
+  }
+
+  .total {
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>📦 Product Inventory System (JSON + Fetch)</h2>
+
+  <div class="form-row">
+    <input type="text" id="pid" placeholder="Product ID">
+    <input type="text" id="pname" placeholder="Name">
+    <input type="text" id="pcategory" placeholder="Category">
+    <input type="number" id="pprice" placeholder="Price">
+    <input type="number" id="pstock" placeholder="Stock">
+  </div>
+
+  <div style="text-align:center; margin-bottom:10px;">
+    <button onclick="addOrUpdateProduct()">Add / Update Product</button>
+  </div>
+
+  <div class="top-bar">
+    <input type="text" id="searchCategory" placeholder="Search by category...">
+    <button onclick="searchByCategory()">Search</button>
+    <button onclick="clearSearch()">Clear</button>
+  </div>
+
+  <div id="message"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Value</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="productTable"></tbody>
+  </table>
+
+  <div class="total" id="totalValue"></div>
+</div>
+
+<script>
+let products = [];
+
+// Load JSON using Fetch
+function loadInventory() {
+  fetch("inventory.json")
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to load JSON");
+      return res.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data)) throw new Error("Invalid JSON format");
+      products = data;
+      displayProducts(products);
+    })
+    .catch(err => {
+      console.error(err);
+      showMessage("Error loading or parsing JSON file!", "error");
+    });
+}
+
+// Display products
+function displayProducts(list) {
+  const tbody = document.getElementById("productTable");
+  tbody.innerHTML = "";
+
+  let total = 0;
+
+  list.forEach(p => {
+    const value = p.price * p.stock;
+    total += value;
+
+    const tr = document.createElement("tr");
+    if (p.stock <= 3) tr.classList.add("low-stock"); // Conditional formatting
+
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td>${p.name}</td>
+      <td>${p.category}</td>
+      <td>${p.price}</td>
+      <td>${p.stock}</td>
+      <td>${value}</td>
+      <td>
+        <button class="edit" onclick="editProduct('${p.id}')">Edit</button>
+        <button class="danger" onclick="deleteProduct('${p.id}')">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("totalValue").textContent =
+    "Total Inventory Value: ₹ " + total;
+}
+
+// Add or Update
+function addOrUpdateProduct() {
+  const id = document.getElementById("pid").value.trim();
+  const name = document.getElementById("pname").value.trim();
+  const category = document.getElementById("pcategory").value.trim();
+  const price = document.getElementById("pprice").value.trim();
+  const stock = document.getElementById("pstock").value.trim();
+
+  // Validation
+  if (!id || !name || !category || price === "" || stock === "") {
+    showMessage("All fields are required!", "error");
+    return;
+  }
+  if (isNaN(price) || price <= 0 || isNaN(stock) || stock < 0) {
+    showMessage("Enter valid price and stock!", "error");
+    return;
+  }
+
+  const index = products.findIndex(p => p.id === id);
+
+  if (index !== -1) {
+    // UPDATE (only price/stock or others too)
+    products[index].name = name;
+    products[index].category = category;
+    products[index].price = Number(price);
+    products[index].stock = Number(stock);
+    showMessage("Product updated successfully!", "success");
+  } else {
+    // CREATE
+    products.push({
+      id: id,
+      name: name,
+      category: category,
+      price: Number(price),
+      stock: Number(stock)
+    });
+    showMessage("Product added successfully!", "success");
+  }
+
+  clearForm();
+  displayProducts(products);
+}
+
+// Delete
+function deleteProduct(id) {
+  const index = products.findIndex(p => p.id === id);
+  if (index === -1) {
+    showMessage("Product not found!", "error");
+    return;
+  }
+  products.splice(index, 1);
+  showMessage("Product deleted successfully!", "success");
+  displayProducts(products);
+}
+
+// Edit (load into form)
+function editProduct(id) {
+  const p = products.find(pr => pr.id === id);
+  if (!p) {
+    showMessage("Product not found!", "error");
+    return;
+  }
+  document.getElementById("pid").value = p.id;
+  document.getElementById("pname").value = p.name;
+  document.getElementById("pcategory").value = p.category;
+  document.getElementById("pprice").value = p.price;
+  document.getElementById("pstock").value = p.stock;
+}
+
+// Search by category
+function searchByCategory() {
+  const cat = document.getElementById("searchCategory").value.trim().toLowerCase();
+  if (!cat) {
+    showMessage("Enter category to search!", "error");
+    return;
+  }
+  const filtered = products.filter(p => p.category.toLowerCase().includes(cat));
+  displayProducts(filtered);
+}
+
+// Clear search
+function clearSearch() {
+  document.getElementById("searchCategory").value = "";
+  displayProducts(products);
+}
+
+// Helpers
+function clearForm() {
+  document.getElementById("pid").value = "";
+  document.getElementById("pname").value = "";
+  document.getElementById("pcategory").value = "";
+  document.getElementById("pprice").value = "";
+  document.getElementById("pstock").value = "";
+}
+
+function showMessage(msg, type) {
+  const msgDiv = document.getElementById("message");
+  msgDiv.textContent = msg;
+  msgDiv.className = type;
+}
+
+// Initial load
+loadInventory();
+</script>
+
+</body>
+</html>
